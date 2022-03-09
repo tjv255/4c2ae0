@@ -25,6 +25,7 @@ const ActiveChat = ({
   activeConversation,
   postMessage,
 }) => {
+
   const classes = useStyles();
 
   const conversation = conversations
@@ -38,7 +39,7 @@ const ActiveChat = ({
   };
 
   return (
-    <Box className={classes.root}>
+    <Box key={conversations.className} className={classes.root}>
       {isConversation(conversation) && conversation.otherUser && (
         <>
           <Header

@@ -62,23 +62,28 @@ const Home = ({ user, logout }) => {
     });
   };
 
+  // Fixed: was returning promise due send message not being dealth with as an async function causing undefined reference error
   const postMessage = (body) => {
-    try {
-      const data = saveMessage(body);
-
-      if (!body.conversationId) {
-        addNewConvo(body.recipientId, data.message);
-      } else {
-        addMessageToConversation(data);
+    saveMessage(body).then(
+      (data) => {
+        if (!body.conversationId) {
+          console.log(data.text)
+          console.log(data.message)
+          addNewConvo(body.recipientId, data.message);
+        } else {
+          addMessageToConversation(data);
+        }
+  
+        sendMessage(data, body);
+      },
+      (error) => {
+        console.error(error);
       }
-
-      sendMessage(data, body);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    );
+  }
 
   const addNewConvo = useCallback(
+    
     (recipientId, message) => {
       conversations.forEach((convo) => {
         if (convo.otherUser.id === recipientId) {
@@ -87,7 +92,7 @@ const Home = ({ user, logout }) => {
           convo.id = message.conversationId;
         }
       });
-      setConversations(conversations);
+      setConversations([...conversations]);
     },
     [setConversations, conversations]
   );
@@ -112,7 +117,7 @@ const Home = ({ user, logout }) => {
           convo.latestMessageText = message.text;
         }
       });
-      setConversations(conversations);
+      setConversations([...conversations]);
     },
     [setConversations, conversations]
   );

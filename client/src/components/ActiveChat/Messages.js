@@ -7,7 +7,7 @@ const Messages = (props) => {
   const { messages, otherUser, userId } = props;
 
   return (
-    <Box>
+    <Box key={messages}>
       {messages.map((message) => {
         const time = moment(message.createdAt).format('h:mm');
 
@@ -21,7 +21,10 @@ const Messages = (props) => {
             otherUser={otherUser}
           />
         );
-      })}
+      })
+      .sort((a,b) => {
+        return (a.key > b.key) ? 1 : -1;
+      })};
     </Box>
   );
 };
