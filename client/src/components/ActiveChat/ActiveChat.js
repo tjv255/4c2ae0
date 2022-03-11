@@ -34,6 +34,17 @@ const ActiveChat = ({
       )
     : {};
 
+    // mark messages as read each time component re-renders
+  if (conversation) {
+    conversation.messages.filter((message) => {
+      return (message.senderId !== user.id && !message.receiverHasRead) 
+      })
+      .forEach((message) => {
+        // ToDo: Mark these messages as read in database (requires a put request)
+      })
+  }
+
+
   const isConversation = (obj) => {
     return obj !== {} && obj !== undefined;
   };

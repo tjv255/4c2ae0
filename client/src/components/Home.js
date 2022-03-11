@@ -187,9 +187,7 @@ const Home = ({ user, logout }) => {
         const { data } = await axios.get('/api/conversations');
         data.forEach((convo) => {
           convo.messages.sort((a, b) => {
-            let aa = parseInt(a.createdAt.replaceAll(":","").replaceAll("-","").replaceAll("Z","").replaceAll("T",""));
-            let bb = parseInt(b.createdAt.replaceAll(":","").replaceAll("-","").replaceAll("Z","").replaceAll("T",""));
-            return (aa > bb) ? 1 : -1;
+            return (a > b) ? 1 : -1;
           }) 
         });
         setConversations(data);
