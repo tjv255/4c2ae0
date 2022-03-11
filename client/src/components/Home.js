@@ -62,25 +62,21 @@ const Home = ({ user, logout }) => {
     });
   };
 
-  // Fixed: was returning promise due send message not being dealth with as an async function causing undefined reference error
-  const postMessage = (body) => {
-    saveMessage(body).then(
-      (data) => {
-        if (!body.conversationId) {
-          console.log(data.text)
-          console.log(data.message)
-          addNewConvo(body.recipientId, data.message);
-        } else {
-          addMessageToConversation(data);
-        }
-  
-        sendMessage(data, body);
-      },
-      (error) => {
-        console.error(error);
+  const postMessage = async (body) => {
+    try {
+      const data = await saveMessage(body);
+
+      if (!body.conversationId) {
+        addNewConvo(body.recipientId, data.message);
+      } else {
+        addMessageToConversation(data);
       }
-    );
-  }
+
+      sendMessage(data, body);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const addNewConvo = useCallback(
     
@@ -187,7 +183,15 @@ const Home = ({ user, logout }) => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
+        // sort each message
         const { data } = await axios.get('/api/conversations');
+        data.forEach((convo) => {
+          convo.messages.sort((a, b) => {
+            let aa = parseInt(a.createdAt.replaceAll(":","").replaceAll("-","").replaceAll("Z","").replaceAll("T",""));
+            let bb = parseInt(b.createdAt.replaceAll(":","").replaceAll("-","").replaceAll("Z","").replaceAll("T",""));
+            return (aa > bb) ? 1 : -1;
+          }) 
+        });
         setConversations(data);
       } catch (error) {
         console.error(error);
