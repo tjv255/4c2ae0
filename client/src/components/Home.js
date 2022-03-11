@@ -193,11 +193,11 @@ const Home = ({ user, logout }) => {
       try {
         // sort each message
         const { data } = await axios.get('/api/conversations');
-        // data.forEach((convo) => {
-        //   convo.messages.sort((a, b) => {
-        //     return (a > b) ? 1 : -1;
-        //   }) 
-        // });
+        data.forEach((convo) => {
+          convo.messages.sort((a, b) => {
+            return (a > b) ? 1 : -1;
+          }) 
+        });
         setConversations(data);
       } catch (error) {
         console.error(error);
