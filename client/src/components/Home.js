@@ -79,15 +79,19 @@ const Home = ({ user, logout }) => {
   };
 
   const addNewConvo = useCallback(
-    
     (recipientId, message) => {
-      setConversations((prev) => 
-        prev.forEach((convo) => {
+      setConversations((prev) =>
+      prev.map((convo) => {
         if (convo.otherUser.id === recipientId) {
-          convo.messages.push(message);
-          convo.latestMessageText = message.text;
-          convo.id = message.conversationId;
+          const convoCopy = { ...convo }
+          convoCopy.messages.push(message);
+          convoCopy.latestMessageText = message.text;
+          convoCopy.id = message.conversationId;
+          return convoCopy;
+        } else {
+          return convo;
         }
+        
       }));
     },
     [setConversations, conversations]
@@ -106,14 +110,18 @@ const Home = ({ user, logout }) => {
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
       }
+
       setConversations((prev) => 
-      conversations.forEach((convo) => {
+      prev.map((convo) => {
         if (convo.id === message.conversationId) {
-          convo.messages.push(message);
-          convo.latestMessageText = message.text;
+          const convoCopy = { ...convo }
+          convoCopy.messages.push(message);
+          convoCopy.latestMessageText = message.text;
+          return convoCopy;
+        } else {
+          return convo;
         }
       }));
-      setConversations([...conversations]);
     },
     [setConversations, conversations]
   );
@@ -185,11 +193,11 @@ const Home = ({ user, logout }) => {
       try {
         // sort each message
         const { data } = await axios.get('/api/conversations');
-        data.forEach((convo) => {
-          convo.messages.sort((a, b) => {
-            return (a > b) ? 1 : -1;
-          }) 
-        });
+        // data.forEach((convo) => {
+        //   convo.messages.sort((a, b) => {
+        //     return (a > b) ? 1 : -1;
+        //   }) 
+        // });
         setConversations(data);
       } catch (error) {
         console.error(error);
