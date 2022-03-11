@@ -39,7 +39,7 @@ const ActiveChat = ({
   };
 
   return (
-    <Box key={conversations.className} className={classes.root}>
+    <Box className={classes.root}>
       {isConversation(conversation) && conversation.otherUser && (
         <>
           <Header

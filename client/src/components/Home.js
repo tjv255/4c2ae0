@@ -81,14 +81,14 @@ const Home = ({ user, logout }) => {
   const addNewConvo = useCallback(
     
     (recipientId, message) => {
-      conversations.forEach((convo) => {
+      setConversations((prev) => 
+        prev.forEach((convo) => {
         if (convo.otherUser.id === recipientId) {
           convo.messages.push(message);
           convo.latestMessageText = message.text;
           convo.id = message.conversationId;
         }
-      });
-      setConversations([...conversations]);
+      }));
     },
     [setConversations, conversations]
   );
@@ -106,13 +106,13 @@ const Home = ({ user, logout }) => {
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
       }
-
+      setConversations((prev) => 
       conversations.forEach((convo) => {
         if (convo.id === message.conversationId) {
           convo.messages.push(message);
           convo.latestMessageText = message.text;
         }
-      });
+      }));
       setConversations([...conversations]);
     },
     [setConversations, conversations]
@@ -187,9 +187,7 @@ const Home = ({ user, logout }) => {
         const { data } = await axios.get('/api/conversations');
         data.forEach((convo) => {
           convo.messages.sort((a, b) => {
-            let aa = parseInt(a.createdAt.replaceAll(":","").replaceAll("-","").replaceAll("Z","").replaceAll("T",""));
-            let bb = parseInt(b.createdAt.replaceAll(":","").replaceAll("-","").replaceAll("Z","").replaceAll("T",""));
-            return (aa > bb) ? 1 : -1;
+            return (a > b) ? 1 : -1;
           }) 
         });
         setConversations(data);
