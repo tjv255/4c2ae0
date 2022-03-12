@@ -62,6 +62,12 @@ const Home = ({ user, logout }) => {
     });
   };
 
+  const updateMessageReadStatus = async (body) => {
+    const { data } = await axios.put('/api/messages', body);
+    console.log(data);
+    return data;
+  }
+
   const postMessage = async (body) => {
     try {
       const data = await saveMessage(body);
@@ -223,6 +229,7 @@ const Home = ({ user, logout }) => {
           conversations={conversations}
           user={user}
           postMessage={postMessage}
+          updateMessageReadStatus = {updateMessageReadStatus}
         />
       </Grid>
     </>

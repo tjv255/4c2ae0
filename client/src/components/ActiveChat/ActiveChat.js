@@ -24,6 +24,7 @@ const ActiveChat = ({
   conversations,
   activeConversation,
   postMessage,
+  updateMessageReadStatus,
 }) => {
 
   const classes = useStyles();
@@ -34,16 +35,41 @@ const ActiveChat = ({
       )
     : {};
 
-    // mark messages as read each time component re-renders
+  //   // mark messages as read each time component re-renders
+  // if (conversation) {
+  //   conversation.messages.filter((message) => {
+  //     return (message.senderId !== user.id && !message.receiverHasRead) 
+  //     })
+  //     .forEach((message) => {
+  //       // ToDo: Mark these messages as read in database (requires a put request)
+  //     })
+  // }
+
   if (conversation) {
-    conversation.messages.filter((message) => {
-      return (message.senderId !== user.id && !message.receiverHasRead) 
-      })
-      .forEach((message) => {
-        // ToDo: Mark these messages as read in database (requires a put request)
-      })
+    messageRead();
   }
 
+  function clickedChatWhereNotSender() {
+    if (conversation.messages.length == 0)
+      return false;
+    return conversation.messages[conversation.messages.length-1].senderId !== user.id
+  };
+
+  function messageRead() {
+    if (clickedChatWhereNotSender()) {
+      
+      const reqBody = {
+        conversationId: conversation.id,
+        id: conversation.messages[conversation.messages.length-1].id,
+      }
+      updateMessageReadStatus(reqBody);
+      console.log('I am not the sender', reqBody);
+
+    }
+    else {
+      console.log('I am the sender');
+    }
+  }
 
   const isConversation = (obj) => {
     return obj !== {} && obj !== undefined;

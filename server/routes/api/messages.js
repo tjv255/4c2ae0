@@ -44,4 +44,19 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.put("/", async (req, res, next) => {
+  if (!req.user) {
+    return res.sendStatus(401);
+  }
+
+  const { id, conversationId, } = req.body;
+
+  let message = Message.updateMessage(
+    conversationId,
+    id,
+  );
+
+  res.json({message})
+});
+
 module.exports = router;
