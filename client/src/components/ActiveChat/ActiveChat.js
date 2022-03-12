@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import { Input, Header, Messages } from './index';
@@ -35,19 +35,12 @@ const ActiveChat = ({
       )
     : {};
 
-  //   // mark messages as read each time component re-renders
-  // if (conversation) {
-  //   conversation.messages.filter((message) => {
-  //     return (message.senderId !== user.id && !message.receiverHasRead) 
-  //     })
-  //     .forEach((message) => {
-  //       // ToDo: Mark these messages as read in database (requires a put request)
-  //     })
-  // }
-
-  if (conversation) {
-    messageRead();
-  }
+  // Set uread message to read upon opening conversation
+  useEffect(() => {
+    if (conversation) {
+      messageRead();
+    }
+  }, [activeConversation]);
 
   function clickedChatWhereNotSender() {
     if (conversation.messages.length == 0)
@@ -57,18 +50,14 @@ const ActiveChat = ({
 
   function messageRead() {
     if (clickedChatWhereNotSender()) {
-      
+      // User is not the one who sent the last message
       const reqBody = {
         conversationId: conversation.id,
         id: conversation.messages[conversation.messages.length-1].id,
       }
       updateMessageReadStatus(reqBody);
-      console.log('I am not the sender', reqBody);
-
     }
-    else {
-      console.log('I am the sender');
-    }
+    // else do nothing if the user is the one who sent the message
   }
 
   const isConversation = (obj) => {
@@ -90,6 +79,7 @@ const ActiveChat = ({
                   messages={conversation.messages}
                   otherUser={conversation.otherUser}
                   userId={user.id}
+                  messageRead={messageRead}
                 />
                 <Input
                   otherUser={conversation.otherUser}

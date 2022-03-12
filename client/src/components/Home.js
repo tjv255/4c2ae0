@@ -64,7 +64,10 @@ const Home = ({ user, logout }) => {
 
   const updateMessageReadStatus = async (body) => {
     const { data } = await axios.put('/api/messages', body);
-    console.log(data);
+    socket.emit('update-message', {
+      message: data.message,
+    });
+    updateMessage(data)
     return data;
   }
 
@@ -85,16 +88,20 @@ const Home = ({ user, logout }) => {
   };
 
   const addNewConvo = useCallback(
-    
     (recipientId, message) => {
-      conversations.forEach((convo) => {
-        if (convo.otherUser.id === recipientId) {
-          convo.messages.push(message);
-          convo.latestMessageText = message.text;
-          convo.id = message.conversationId;
-        }
-      });
-      setConversations([...conversations]);
+      setConversations((prev) =>
+        prev.map((convo) => {
+          if (convo.otherUser.id === recipientId) {
+            const convoCopy = { ...convo }
+            convoCopy.messages.push(message);
+            convoCopy.latestMessageText = message.text;
+            convoCopy.id = message.conversationId;
+            return convoCopy;
+          } else {
+            return convo;
+          }
+        })
+      );
     },
     [setConversations, conversations]
   );
@@ -113,16 +120,38 @@ const Home = ({ user, logout }) => {
         setConversations((prev) => [newConvo, ...prev]);
       }
 
-      conversations.forEach((convo) => {
-        if (convo.id === message.conversationId) {
-          convo.messages.push(message);
-          convo.latestMessageText = message.text;
-        }
-      });
-      setConversations([...conversations]);
+      setConversations((prev) => 
+        prev.map((convo) => {
+          if (convo.id === message.conversationId) {
+            const convoCopy = { ...convo }
+            convoCopy.messages.push(message);
+            convoCopy.latestMessageText = message.text;
+            return convoCopy;
+          } else {
+            return convo;
+          }
+        })
+      );
     },
     [setConversations, conversations]
   );
+
+  const updateMessage = useCallback(
+    (data) => {
+    const { message } = data;
+    setConversations((prev) => 
+      prev.map((convo) => {
+        if (convo.id === message.conversationId) {
+          const convoCopy = { ...convo };
+          const index = convo.messages.findIndex(msg => msg.id == message.id)
+          convoCopy.messages[index] = message;
+          return convoCopy;
+        } else {
+          return convo;
+        }
+      })
+    );
+  })
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
@@ -163,6 +192,7 @@ const Home = ({ user, logout }) => {
     socket.on('add-online-user', addOnlineUser);
     socket.on('remove-offline-user', removeOfflineUser);
     socket.on('new-message', addMessageToConversation);
+    socket.on('update-message', updateMessage);
 
     return () => {
       // before the component is destroyed
@@ -170,6 +200,7 @@ const Home = ({ user, logout }) => {
       socket.off('add-online-user', addOnlineUser);
       socket.off('remove-offline-user', removeOfflineUser);
       socket.off('new-message', addMessageToConversation);
+      socket.off('update-message', updateMessage);
     };
   }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
 

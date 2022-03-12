@@ -20,19 +20,22 @@ Message.findMessage = async function(conversationId, id) {
   const message = await Message.findOne({
     where: { conversationId: conversationId, id: id, }
   });
+
   return message;
 }
 
 Message.updateMessage = async function(conversationId, id) {
-  const message = Message.findMessage(conversationId, id);
-  Message.update(
+  const { result } =await Message.update(
     { receiverHasRead: true },
     { where: {conversationId: conversationId, id: id} }
-  ).then (result => {
-      return({result, message});
-  }).catch (error => {
-    return ({error, message});
-  });
+  )
+
+  let message = await Message.findMessage(
+    conversationId,
+    id,
+  );
+  message = message.dataValues;
+  return({result, message});
 }
 
 module.exports = Message;

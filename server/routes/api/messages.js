@@ -45,18 +45,19 @@ router.post("/", async (req, res, next) => {
 });
 
 router.put("/", async (req, res, next) => {
-  if (!req.user) {
-    return res.sendStatus(401);
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const { id, conversationId, } = req.body;
+    let  data  = await Message.updateMessage(
+      conversationId,
+      id,
+    );
+    res.json(data);
+  } catch (error) {
+    next(error);
   }
-
-  const { id, conversationId, } = req.body;
-
-  let message = Message.updateMessage(
-    conversationId,
-    id,
-  );
-
-  res.json({message})
 });
 
 module.exports = router;

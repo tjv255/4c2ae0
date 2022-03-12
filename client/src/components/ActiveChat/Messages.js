@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@material-ui/core';
 import { SenderBubble, OtherUserBubble } from '.';
 import moment from 'moment';
 
 const Messages = (props) => {
-  const { messages, otherUser, userId } = props;
+  const { messages, otherUser, userId, messageRead } = props;
+
+  // Mark incoming messages from other user as read if the receiver has the conversation open
+  useEffect(() => {
+    messageRead();
+  }, [messages.length]);
+
   return (
     <Box>
       {messages.map((message) => {
