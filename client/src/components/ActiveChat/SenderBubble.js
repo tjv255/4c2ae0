@@ -33,17 +33,24 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const SenderBubble = ({ time, text, addUnreadIndicator, otherUser }) => {
+const SenderBubble = ({ time, text, addUnreadIndicatorTop, addUnreadIndicatorBottom, otherUser }) => {
   const classes = useStyles();
 
   return (
     <Box className={classes.root}>
+      {addUnreadIndicatorTop ? (
+      <Avatar 
+        alt={otherUser.username}
+        src={otherUser.photoUrl}
+        className={classes.avatar}
+      />
+      )
+      : ''}
       <Typography className={classes.date}>{time}</Typography>
       <Box className={classes.bubble}>
         <Typography className={classes.text}>{text}</Typography>
-        
       </Box>
-      {addUnreadIndicator ? (
+      {addUnreadIndicatorBottom ? (
         <Avatar 
           alt={otherUser.username}
           src={otherUser.photoUrl}
