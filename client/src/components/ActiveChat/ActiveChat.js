@@ -42,12 +42,14 @@ const ActiveChat = ({
     }
   }, [activeConversation]);
 
+  // Called when user opens a new conversation. Returns true if the user wasn't the one to send the last message 
   function clickedChatWhereNotSender() {
     if (conversation.messages.length == 0)
       return false;
     return conversation.messages[conversation.messages.length-1].senderId !== user.id
   };
 
+  // Sets the last message marked as unread to read
   function messageRead() {
     if (clickedChatWhereNotSender()) {
       // User is not the one who sent the last message

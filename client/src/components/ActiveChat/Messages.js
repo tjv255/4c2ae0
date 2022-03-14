@@ -11,19 +11,40 @@ const Messages = (props) => {
     messageRead();
   }, [messages.length]);
 
+  // Returns the count of unread messages in the conversation directed at the other user
+  const otherUserFirstUnreadMessageId = () => {
+    let i = messages.length - 1;
+    if (i > 0) {
+      while (i >= 0 && messages[i].senderId == userId && !messages[i].receiverHasRead) {
+        i -= 1;
+      }
+      return messages[i].id;
+    }
+    else {
+      return -1;
+    }
+  }
+  const unreadMessageId = otherUserFirstUnreadMessageId();
+
   return (
     <Box>
       {messages.map((message) => {
         const time = moment(message.createdAt).format('h:mm');
 
         return message.senderId === userId ? (
-          <SenderBubble key={message.id} text={message.receiverHasRead.toString()} time={time} />
+          <SenderBubble 
+            key={message.id} 
+            text={message.text} 
+            time={time} 
+            addUnreadIndicator={unreadMessageId === message.id} 
+            otherUser={otherUser}
+            />
         ) : (
           <OtherUserBubble
             key={message.id}
-            text={message.receiverHasRead.toString()}
+            text={message.text}
             time={time}
-            otherUser={otherUser}
+            otherUser={otherUser} 
           />
         );
       })

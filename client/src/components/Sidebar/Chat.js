@@ -1,7 +1,8 @@
-import React from 'react';
-import { Box } from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { Box, Typography } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
+import { red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -15,6 +16,18 @@ const useStyles = makeStyles((theme) => ({
       cursor: 'grab',
     },
   },
+  unreadMessageIndicator: {
+    marginRight: 6,
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    backgroundImage: 'linear-gradient(225deg, #6CC1FF 0%, #3A8DFF 100%)',
+    borderRadius: '50px',
+    paddingLeft: '7px',
+    paddingRight: '7px',
+    paddingTop: '2px',
+    paddingBottom: '2px',
+  }
 }));
 
 const Chat = ({ conversation, setActiveChat }) => {
@@ -25,6 +38,19 @@ const Chat = ({ conversation, setActiveChat }) => {
     await setActiveChat(conversation.otherUser.username);
   };
 
+  // Returns the count of unread messages in the conversation directed at the user
+  const userUnreadMessageCount = () => {
+    let i = conversation.messages.length - 1;
+    const messages = conversation.messages;
+    let count = 0;
+    while (i >= 0 && messages[i].senderId == otherUser.id && !messages[i].receiverHasRead) {
+      count += 1;
+      i -= 1;
+    }
+    return count;
+  }
+  const unreadMessageCount = userUnreadMessageCount();
+
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <BadgeAvatar
@@ -34,6 +60,13 @@ const Chat = ({ conversation, setActiveChat }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
+      {unreadMessageCount > 0 ? (
+      <Typography className={classes.unreadMessageIndicator}>
+        {userUnreadMessageCount()}
+      </Typography>
+      ) : '' }
+      
+      
     </Box>
   );
 };
