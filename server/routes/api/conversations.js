@@ -18,7 +18,7 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id"],
+      attributes: ["id", "unreadMessageCount"],
       order: [[Message, "createdAt", "DESC"]],
       include: [
         { model: Message, order: ["createdAt", "DESC"] },
@@ -71,8 +71,21 @@ router.get("/", async (req, res, next) => {
       convoJSON.latestMessageText = convoJSON.messages[0].text;
       conversations[i] = convoJSON;
     }
-
     res.json(conversations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/get-unread-message-count", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    } 
+    const conversationId = req.body.conversationId;
+    const count = await Conversation.findOne(
+      { where: {id: conversationId} },
+    )
   } catch (error) {
     next(error);
   }

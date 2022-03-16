@@ -59,15 +59,18 @@ const Home = ({ user, logout }) => {
       message: data.message,
       recipientId: body.recipientId,
       sender: data.sender,
+      unreadMessageCount: data.updatedUnreadMessageCount,
     });
   };
 
-  const updateMessageReadStatus = async (body) => {
-    const { data } = await axios.put('/api/messages', body);
+  const updateMessageReadOnServer = async (body) => {
+    const  data  = await axios.put('/api/messages/mark-as-read/all', body);
+    const conversationId = body.conversationId;
     socket.emit('update-message', {
-      message: data.message,
+      conversationId: conversationId,
     });
-    updateMessage(data)
+    
+    updateMessageReadOnClient({ conversationId });
     return data;
   }
 
@@ -109,12 +112,13 @@ const Home = ({ user, logout }) => {
   const addMessageToConversation = useCallback(
     (data) => {
       // if sender isn't null, that means the message needs to be put in a brand new convo
-      const { message, sender = null } = data;
+      const { message, sender = null, updatedUnreadMessageCount } = data;
       if (sender !== null) {
         const newConvo = {
           id: message.conversationId,
           otherUser: sender,
           messages: [message],
+          unreadMessageCount: updatedUnreadMessageCount,
         };
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
@@ -124,6 +128,24 @@ const Home = ({ user, logout }) => {
         prev.map((convo) => {
           if (convo.id === message.conversationId) {
             const convoCopy = { ...convo }
+
+            // for the receiver, check to see if they have the conversation open they are receiving in
+            // If so, mark incoming message as read
+            if (message.senderId != user.id && convo.otherUser.username == activeConversation) {
+              const body = {
+                conversationId: convo.id,
+              }
+              axios.put('/api/messages/mark-as-read/all', body).then(
+                socket.emit('update-message', {
+                  conversationId: convo.id,
+                })
+              )
+              
+              convoCopy.unreadMessageCount = 0;
+            }
+            else {
+              convoCopy.unreadMessageCount = updatedUnreadMessageCount;
+            }
             convoCopy.messages.push(message);
             convoCopy.latestMessageText = message.text;
             return convoCopy;
@@ -136,15 +158,14 @@ const Home = ({ user, logout }) => {
     [setConversations, conversations]
   );
 
-  const updateMessage = useCallback(
+  const updateMessageReadOnClient = useCallback(
     (data) => {
-    const { message } = data;
+    const conversationId = data.conversationId;
     setConversations((prev) => 
       prev.map((convo) => {
-        if (convo.id === message.conversationId) {
+        if (convo.id === conversationId) {
           const convoCopy = { ...convo };
-          const index = convo.messages.findIndex(msg => msg.id == message.id)
-          convoCopy.messages[index] = message;
+          convoCopy.unreadMessageCount = 0;
           return convoCopy;
         } else {
           return convo;
@@ -192,7 +213,7 @@ const Home = ({ user, logout }) => {
     socket.on('add-online-user', addOnlineUser);
     socket.on('remove-offline-user', removeOfflineUser);
     socket.on('new-message', addMessageToConversation);
-    socket.on('update-message', updateMessage);
+    socket.on('update-message', updateMessageReadOnClient);
 
     return () => {
       // before the component is destroyed
@@ -200,7 +221,7 @@ const Home = ({ user, logout }) => {
       socket.off('add-online-user', addOnlineUser);
       socket.off('remove-offline-user', removeOfflineUser);
       socket.off('new-message', addMessageToConversation);
-      socket.off('update-message', updateMessage);
+      socket.off('update-message', updateMessageReadOnClient);
     };
   }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
 
@@ -260,7 +281,7 @@ const Home = ({ user, logout }) => {
           conversations={conversations}
           user={user}
           postMessage={postMessage}
-          updateMessageReadStatus = {updateMessageReadStatus}
+          updateMessageReadOnServer = {updateMessageReadOnServer}
         />
       </Grid>
     </>

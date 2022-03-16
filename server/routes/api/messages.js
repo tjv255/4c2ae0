@@ -8,14 +8,21 @@ router.post("/", async (req, res, next) => {
     if (!req.user) {
       return res.sendStatus(401);
     }
+
     const senderId = req.user.id;
     const { recipientId, text, conversationId, receiverHasRead, sender } = req.body;
 
     // if we already know conversation id, we can save time and just add it to message and return
     if (conversationId) {
       const message = await Message.create({ senderId, text, receiverHasRead, conversationId });
-      return res.json({ message, sender, receiverHasRead });
+      const updatedUnreadMessageCount =await Conversation.setUnreadMessageCount(conversationId, senderId)
+
+      return res.json({ message, sender, receiverHasRead, updatedUnreadMessageCount });
     }
+    else {
+      updatedUnreadMessageCount = 1;
+    }
+
     // if we don't have conversation id, find a conversation to make sure it doesn't already exist
     let conversation = await Conversation.findConversation(
       senderId,
@@ -38,23 +45,26 @@ router.post("/", async (req, res, next) => {
       receiverHasRead,
       conversationId: conversation.id,
     });
-    res.json({ message, sender });
+    res.json({ message, sender, updatedUnreadMessageCount });
   } catch (error) {
     next(error);
   }
 });
 
-router.put("/", async (req, res, next) => {
+router.put("/mark-as-read/all", async (req, res, next) => {
   try {
     if (!req.user) {
       return res.sendStatus(401);
     }
-    const { id, conversationId, } = req.body;
-    let  data  = await Message.updateMessage(
+    const { conversationId, } = req.body;
+    let  result  = await Message.markAsReadInConvo(
       conversationId,
-      id,
     );
-    res.json(data);
+    Conversation.update(
+      {unreadMessageCount: 0},
+      {where: {id: conversationId}}
+    )
+    res.json({result, conversationId});
   } catch (error) {
     next(error);
   }

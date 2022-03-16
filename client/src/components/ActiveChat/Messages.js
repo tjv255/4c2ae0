@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box, Avatar } from '@material-ui/core';
 import { SenderBubble, OtherUserBubble } from '.';
@@ -14,42 +14,34 @@ const useStyles = makeStyles(() => ({
 }));
 
 const Messages = (props) => {
-  const { messages, otherUser, userId, messageRead } = props;
-  const classes = useStyles();
+  const [firstUnreadMessageId, setFirstUnreadMessageId] = useState(-1);
 
-  // Mark incoming messages from other user as read if the receiver has the conversation open
+  const { messages, otherUser, userId, unreadMessageCount } = props;
+  useStyles();
+
   useEffect(() => {
-    messageRead();
-  }, [messages.length]);
-
-  // Returns the count of unread messages in the conversation directed at the other user
-  const otherUserFirstUnreadMessageId = () => {
-    let i = messages.length - 1;
-    if (i >= 0) {
-      while (i >= 0 && messages[i].senderId == userId && !messages[i].receiverHasRead) {
-        i -= 1;
-      }
-      if (i == -1) return -1;
-      return messages[i].id;
+    if ((messages.length === 0)) {
+      setFirstUnreadMessageId(-1);
+    }
+    else if (unreadMessageCount == messages.length) {
+      setFirstUnreadMessageId(messages[0].id);
     }
     else {
-      return -1;
+      setFirstUnreadMessageId(messages[(messages.length - unreadMessageCount)-1].id);
     }
-  }
-  const unreadMessageId = otherUserFirstUnreadMessageId();
+  }, [unreadMessageCount]);
 
   return (
     <Box>
       {messages.map((message) => {
         const time = moment(message.createdAt).format('h:mm');
-
         return message.senderId === userId ? (
           <SenderBubble 
             key={message.id} 
             text={message.text} 
             time={time} 
-            addUnreadIndicatorTop={unreadMessageId === -1 && message.id == messages[0].id} 
-            addUnreadIndicatorBottom={unreadMessageId === message.id} 
+            addUnreadIndicatorTop={firstUnreadMessageId === messages[0].id && message.id === firstUnreadMessageId} 
+            addUnreadIndicatorBottom={firstUnreadMessageId !== messages[0].id && firstUnreadMessageId === message.id } 
             otherUser={otherUser}
             />
         ) : (

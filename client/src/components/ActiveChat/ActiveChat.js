@@ -24,7 +24,8 @@ const ActiveChat = ({
   conversations,
   activeConversation,
   postMessage,
-  updateMessageReadStatus,
+  updateMessageReadOnServer,
+  getUnreadMesageCount,
 }) => {
 
   const classes = useStyles();
@@ -38,7 +39,7 @@ const ActiveChat = ({
   // Set uread message to read upon opening conversation
   useEffect(() => {
     if (conversation) {
-      messageRead();
+      messagesRead();
     }
   }, [activeConversation]);
 
@@ -50,14 +51,13 @@ const ActiveChat = ({
   };
 
   // Sets the last message marked as unread to read
-  function messageRead() {
+  function messagesRead() {
     if (clickedChatWhereNotSender()) {
       // User is not the one who sent the last message
       const reqBody = {
         conversationId: conversation.id,
-        id: conversation.messages[conversation.messages.length-1].id,
       }
-      updateMessageReadStatus(reqBody);
+      updateMessageReadOnServer(reqBody);
     }
     // else do nothing if the user is the one who sent the message
   }
@@ -67,7 +67,7 @@ const ActiveChat = ({
   };
 
   return (
-    <Box key={conversations.className} className={classes.root}>
+    <Box className={classes.root}>
       {isConversation(conversation) && conversation.otherUser && (
         <>
           <Header
@@ -81,7 +81,7 @@ const ActiveChat = ({
                   messages={conversation.messages}
                   otherUser={conversation.otherUser}
                   userId={user.id}
-                  messageRead={messageRead}
+                  unreadMessageCount={conversation.unreadMessageCount ? conversation.unreadMessageCount : 0}
                 />
                 <Input
                   otherUser={conversation.otherUser}

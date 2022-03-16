@@ -38,4 +38,23 @@ Message.updateMessage = async function(conversationId, id) {
   return({result, message});
 }
 
+Message.markAsReadInConvo = async function (conversationId) {
+  await Message.update(
+    { receiverHasRead: true },
+    { where: {conversationId: conversationId} },
+  );
+  return;
+}
+
+Message.getUnreadMessageCount = async function(conversationId, senderId) {
+  const result = await Message.findAndCountAll({
+    where: {
+      receiverHasRead: false,
+      conversationId: conversationId,
+      senderId: senderId,
+    }
+  })
+  return result.count;
+}
+
 module.exports = Message;

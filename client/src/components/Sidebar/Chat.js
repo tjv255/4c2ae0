@@ -38,19 +38,6 @@ const Chat = ({ conversation, setActiveChat }) => {
     await setActiveChat(conversation.otherUser.username);
   };
 
-  // Returns the count of unread messages in the conversation directed at the user
-  const userUnreadMessageCount = () => {
-    let i = conversation.messages.length - 1;
-    const messages = conversation.messages;
-    let count = 0;
-    while (i >= 0 && messages[i].senderId == otherUser.id && !messages[i].receiverHasRead) {
-      count += 1;
-      i -= 1;
-    }
-    return count;
-  }
-  const unreadMessageCount = userUnreadMessageCount();
-
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <BadgeAvatar
@@ -60,9 +47,9 @@ const Chat = ({ conversation, setActiveChat }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      {unreadMessageCount > 0 ? (
+      {conversation.unreadMessageCount > 0 && conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id ? (
       <Typography className={classes.unreadMessageIndicator}>
-        {userUnreadMessageCount()}
+        {conversation.unreadMessageCount}
       </Typography>
       ) : '' }
       

@@ -26,6 +26,7 @@ async function seed() {
   const santaigoConvo = await Conversation.create({
     user1Id: thomas.id,
     user2Id: santiago.id,
+    unreadMessageCount: 0,
   });
 
   await Message.create({
@@ -57,6 +58,7 @@ async function seed() {
   const chiumboConvo = await Conversation.create({
     user1Id: chiumbo.id,
     user2Id: thomas.id,
+    unreadMessageCount: 0,
   });
   await Message.create({
     conversationId: chiumboConvo.id,
@@ -75,6 +77,7 @@ async function seed() {
   const hualingConvo = await Conversation.create({
     user2Id: hualing.id,
     user1Id: thomas.id,
+    unreadMessageCount: 0,
   });
 
   for (let i = 0; i < 11; i++) {
