@@ -12,6 +12,7 @@ const Message = db.define("message", {
   },
   receiverHasRead: {
     type: Sequelize.BOOLEAN,
+    defaultValue: false,
     allowNull: false,
   }
 });
@@ -22,20 +23,6 @@ Message.findMessage = async function(conversationId, id) {
   });
 
   return message;
-}
-
-Message.updateMessage = async function(conversationId, id) {
-  const { result } =await Message.update(
-    { receiverHasRead: true },
-    { where: {conversationId: conversationId, id: id} }
-  )
-
-  let message = await Message.findMessage(
-    conversationId,
-    id,
-  );
-  message = message.dataValues;
-  return({result, message});
 }
 
 Message.markAsReadInConvo = async function (conversationId) {

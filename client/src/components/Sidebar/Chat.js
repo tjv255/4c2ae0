@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { Box, Typography } from '@material-ui/core';
+import { Badge, Box, Typography } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
-import { red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -48,9 +47,9 @@ const Chat = ({ conversation, setActiveChat }) => {
       />
       <ChatContent conversation={conversation} />
       {conversation.unreadMessageCount > 0 && conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id ? (
-      <Typography className={classes.unreadMessageIndicator}>
+      <Badge className={classes.unreadMessageIndicator}>
         {conversation.unreadMessageCount}
-      </Typography>
+      </Badge>
       ) : '' }
       
       
