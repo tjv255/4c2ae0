@@ -45,7 +45,10 @@ const Chat = ({ conversation, setActiveChat }) => {
         online={otherUser.online}
         sidebar={true}
       />
-      <ChatContent conversation={conversation} />
+      <ChatContent conversation={conversation} unreadMessageExists={conversation.unreadMessageCount && 
+      conversation.messages[conversation.messages.length-1].senderId == conversation.otherUser.id
+         ? conversation.unreadMessageCount > 0
+          : false} />
       {conversation.unreadMessageCount > 0 && conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id ? (
       <Badge className={classes.unreadMessageIndicator}>
         {conversation.unreadMessageCount}
