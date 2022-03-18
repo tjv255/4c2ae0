@@ -79,57 +79,12 @@ async function seed() {
       "https://res.cloudinary.com/dmlvthmqr/image/upload/v1607914466/messenger/6c4faa7d65bc24221c3d369a8889928158daede4_vk5tyg.png",
   });
 
-  const tjv255 = await User.create({
-    username: "tjv255",
-    email: "tjv255@mail.usask.ca",
-    password: "dddddd",
-    photoUrl:
-      "https://res.cloudinary.com/dmlvthmqr/image/upload/v1607914468/messenger/8bc2e13b8ab74765fd57f0880f318eed1c3fb001_fownwt.png",
-  });
-
-  const dd = await User.create({
-    username: "dd",
-    email: "dd@dd.dd",
-    password: "dddddd",
-    photoUrl:
-      "https://res.cloudinary.com/dmlvthmqr/image/upload/v1607914466/messenger/6c4faa7d65bc24221c3d369a8889928158daede4_vk5tyg.png",
-  });
-
-  const tjv255Convo = await Conversation.create({
-    user2Id: tjv255.id,
-    user1Id: dd.id,
-    unreadMessageCount: 0,
-  });
-  await tjv255Convo.addParticipants([tjv255.id, dd.id]);
-
-  const ddConvo = await Conversation.create({
-    user2Id: tjv255.id,
-    user1Id: hualing.id,
-    unreadMessageCount: 0,
-  });
-  await ddConvo.addParticipants([tjv255.id, hualing.id]);
-
-  await Message.create({
-    conversationId: tjv255Convo.id,
-    senderId: tjv255.id,
-    text: "😂 😂 😂",
-    receiverHasRead: false,
-  });
-  await Message.create({
-    conversationId: ddConvo.id,
-    senderId: tjv255.id,
-    text: "😂 😂 😂",
-    receiverHasRead: false,
-  });
-
   const hualingConvo = await Conversation.create({
     user2Id: hualing.id,
     user1Id: thomas.id,
     unreadMessageCount: 0,
   });
   await hualingConvo.addParticipants([hualing.id, thomas.id]);
-  // console.log('____________________________')
-  // console.log(await hualingConvo.getParticipants({joinTableAttributes: []}));
 
 
   for (let i = 0; i < 11; i++) {

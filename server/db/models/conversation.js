@@ -1,6 +1,8 @@
 const { Op, Sequelize } = require("sequelize");
 const db = require("../db");
+const ConversationUser = require("./conversationUser");
 const Message = require("./message");
+const User = require('./user');
 
 const Conversation = db.define("conversation", {
   unreadMessageCount: {
@@ -10,32 +12,32 @@ const Conversation = db.define("conversation", {
   }
 });
 
-// find conversation given two user Ids
 
-Conversation.findConversation = async function (user1Id, user2Id) {
-  const conversation = await Conversation.findOne({
-    include: {
-      model: User,
-      as: 'participants',
-      where: {
-        userId: {
-          [Op.or]: [user1Id, user2Id]
-        }
-      }
+
+// find between a list of users
+// assume no 2 conversations exist with the exact same participants
+Conversation.findConversation = async function (userIds) {
+  var possibleConversationIds = await ConversationUser.findAll({
+    where: {
+      userId: userIds
     },
-    // where: {
-    //   user1Id: {
-    //     [Op.or]: [user1Id, user2Id]
-    //   },
-    //   user2Id: {
-    //     [Op.or]: [user1Id, user2Id]
-    //   }
-    // }
+      attributes: ['conversationId'],
+      raw: true,
+      nest: true,
   });
+  possibleConversationIds = possibleConversationIds.map((i)=>(i.conversationId));
 
-  // return conversation or null if it doesn't exist
+  const conversation = await Conversation.findOne({
+    where: {"$participants.id$": possibleConversationIds},
+    include: [
+      {
+        model: User,
+        as: 'participants',
+      },
+    ]
+  });
   return conversation;
-};
+}
 
 Conversation.setUnreadMessageCount = async function (conversationId, senderId) {
   const updatedUnreadMessageCount = await Message.getUnreadMessageCount(conversationId, senderId);
