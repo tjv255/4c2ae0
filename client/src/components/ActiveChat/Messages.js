@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, Avatar } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import { SenderBubble, OtherUserBubble } from '.';
 import moment from 'moment';
 
