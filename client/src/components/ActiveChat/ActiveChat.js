@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import { Input, Header, Messages } from './index';
@@ -24,7 +24,10 @@ const ActiveChat = ({
   conversations,
   activeConversation,
   postMessage,
+  updateMessageReadOnServer,
+  getUnreadMesageCount,
 }) => {
+
   const classes = useStyles();
 
   const conversation = conversations
@@ -32,6 +35,27 @@ const ActiveChat = ({
         (conversation) => conversation.otherUser.username === activeConversation
       )
     : {};
+
+  useEffect(() => {
+    if (conversation) {
+      messagesRead();
+    }
+  }, [activeConversation]);
+
+  function clickedChatWhereNotSender() {
+    if (conversation.messages.length === 0)
+      return false;
+    return conversation.messages[conversation.messages.length-1].senderId !== user.id
+  };
+
+  function messagesRead() {
+    if (clickedChatWhereNotSender()) {
+      const reqBody = {
+        conversationId: conversation.id,
+      }
+      updateMessageReadOnServer(reqBody);
+    }
+  }
 
   const isConversation = (obj) => {
     return obj !== {} && obj !== undefined;
@@ -52,6 +76,7 @@ const ActiveChat = ({
                   messages={conversation.messages}
                   otherUser={conversation.otherUser}
                   userId={user.id}
+                  unreadMessageCount={conversation.unreadMessageCount ? conversation.unreadMessageCount : 0}
                 />
                 <Input
                   otherUser={conversation.otherUser}

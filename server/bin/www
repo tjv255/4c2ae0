@@ -44,7 +44,14 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("new-message", {
       message: data.message,
       sender: data.sender,
+      updatedUnreadMessageCount: data.unreadMessageCount,
     });
+  });
+
+  socket.on("update-message", (data) => {
+    socket.broadcast.emit("update-message", {
+      conversationId: data.conversationId,
+    })
   });
 
   socket.on("logout", (id) => {

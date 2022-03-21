@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, createTheme, ThemeProvider } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -15,12 +15,28 @@ const useStyles = makeStyles((theme) => ({
   },
   previewText: {
     fontSize: 12,
-    color: "#9CADC8",
     letterSpacing: -0.17,
   },
 }));
 
-const ChatContent = ({ conversation }) => {
+const bold = createTheme({
+  typography: {
+    body1: {
+      fontWeight: 600,
+      color: "#000000",
+    },
+  }
+});
+
+const normal = createTheme({
+  typography: {
+    body1: {
+      color: "#9CADC8",
+    },
+  }
+});
+
+const ChatContent = ({ conversation, unreadMessageExists }) => {
   const classes = useStyles();
 
   const { otherUser } = conversation;
@@ -32,9 +48,11 @@ const ChatContent = ({ conversation }) => {
         <Typography className={classes.username}>
           {otherUser.username}
         </Typography>
-        <Typography className={classes.previewText}>
-          {latestMessageText}
-        </Typography>
+        <ThemeProvider theme={unreadMessageExists ? bold : normal}>
+          <Typography className={classes.previewText}>
+            {latestMessageText}
+          </Typography>
+        </ThemeProvider>
       </Box>
     </Box>
   );

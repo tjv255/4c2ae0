@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@material-ui/core';
+import { Badge, Box } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -15,6 +15,18 @@ const useStyles = makeStyles((theme) => ({
       cursor: 'grab',
     },
   },
+  unreadMessageIndicator: {
+    marginRight: 6,
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    backgroundImage: 'linear-gradient(225deg, #6CC1FF 0%, #3A8DFF 100%)',
+    borderRadius: '50px',
+    paddingLeft: '7px',
+    paddingRight: '7px',
+    paddingTop: '2px',
+    paddingBottom: '2px',
+  }
 }));
 
 const Chat = ({ conversation, setActiveChat }) => {
@@ -33,7 +45,17 @@ const Chat = ({ conversation, setActiveChat }) => {
         online={otherUser.online}
         sidebar={true}
       />
-      <ChatContent conversation={conversation} />
+      <ChatContent conversation={conversation} unreadMessageExists={conversation.unreadMessageCount && 
+      conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id
+         ? conversation.unreadMessageCount > 0
+          : false} />
+      {conversation.unreadMessageCount > 0 && conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id && (
+      <Badge className={classes.unreadMessageIndicator}>
+        {conversation.unreadMessageCount}
+      </Badge>
+      )}
+      
+      
     </Box>
   );
 };
