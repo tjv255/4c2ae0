@@ -59,24 +59,12 @@ const Home = ({ user, logout }) => {
       message: data.message,
       recipientId: body.recipientId,
       sender: data.sender,
-      unreadMessageCount: data.updatedUnreadMessageCount,
     });
   };
 
-  const updateMessageReadOnServer = async (body) => {
-    const  data  = await axios.put('/api/messages/mark-as-read/all', body);
-    const conversationId = body.conversationId;
-    socket.emit('update-message', {
-      conversationId: conversationId,
-    });
-    
-    updateMessageReadOnClient({ conversationId });
-    return data;
-  }
-
-  const postMessage = async (body) => {
+  const postMessage = (body) => {
     try {
-      const data = await saveMessage(body);
+      const data = saveMessage(body);
 
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
@@ -92,19 +80,14 @@ const Home = ({ user, logout }) => {
 
   const addNewConvo = useCallback(
     (recipientId, message) => {
-      setConversations((prev) =>
-        prev.map((convo) => {
-          if (convo.otherUser.id === recipientId) {
-            const convoCopy = { ...convo }
-            convoCopy.messages.push(message);
-            convoCopy.latestMessageText = message.text;
-            convoCopy.id = message.conversationId;
-            return convoCopy;
-          } else {
-            return convo;
-          }
-        })
-      );
+      conversations.forEach((convo) => {
+        if (convo.otherUser.id === recipientId) {
+          convo.messages.push(message);
+          convo.latestMessageText = message.text;
+          convo.id = message.conversationId;
+        }
+      });
+      setConversations(conversations);
     },
     [setConversations, conversations]
   );
@@ -112,67 +95,27 @@ const Home = ({ user, logout }) => {
   const addMessageToConversation = useCallback(
     (data) => {
       // if sender isn't null, that means the message needs to be put in a brand new convo
-      const { message, sender = null, updatedUnreadMessageCount } = data;
+      const { message, sender = null } = data;
       if (sender !== null) {
         const newConvo = {
           id: message.conversationId,
           otherUser: sender,
           messages: [message],
-          unreadMessageCount: updatedUnreadMessageCount,
         };
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
       }
 
-      setConversations((prev) => 
-        prev.map((convo) => {
-          if (convo.id === message.conversationId) {
-            const convoCopy = { ...convo }
-
-            // for the receiver, check to see if they have the conversation open they are receiving in
-            // If so, mark incoming message as read
-            if (message.senderId != user.id && convo.otherUser.username == activeConversation) {
-              const body = {
-                conversationId: convo.id,
-              }
-              axios.put('/api/messages/mark-as-read/all', body).then(
-                socket.emit('update-message', {
-                  conversationId: convo.id,
-                })
-              )
-              
-              convoCopy.unreadMessageCount = 0;
-            }
-            else {
-              convoCopy.unreadMessageCount = updatedUnreadMessageCount;
-            }
-            convoCopy.messages.push(message);
-            convoCopy.latestMessageText = message.text;
-            return convoCopy;
-          } else {
-            return convo;
-          }
-        })
-      );
+      conversations.forEach((convo) => {
+        if (convo.id === message.conversationId) {
+          convo.messages.push(message);
+          convo.latestMessageText = message.text;
+        }
+      });
+      setConversations(conversations);
     },
     [setConversations, conversations]
   );
-
-  const updateMessageReadOnClient = useCallback(
-    (data) => {
-    const conversationId = data.conversationId;
-    setConversations((prev) => 
-      prev.map((convo) => {
-        if (convo.id === conversationId) {
-          const convoCopy = { ...convo };
-          convoCopy.unreadMessageCount = 0;
-          return convoCopy;
-        } else {
-          return convo;
-        }
-      })
-    );
-  })
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
@@ -213,7 +156,6 @@ const Home = ({ user, logout }) => {
     socket.on('add-online-user', addOnlineUser);
     socket.on('remove-offline-user', removeOfflineUser);
     socket.on('new-message', addMessageToConversation);
-    socket.on('update-message', updateMessageReadOnClient);
 
     return () => {
       // before the component is destroyed
@@ -221,7 +163,6 @@ const Home = ({ user, logout }) => {
       socket.off('add-online-user', addOnlineUser);
       socket.off('remove-offline-user', removeOfflineUser);
       socket.off('new-message', addMessageToConversation);
-      socket.off('update-message', updateMessageReadOnClient);
     };
   }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
 
@@ -241,13 +182,7 @@ const Home = ({ user, logout }) => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        // sort each message
         const { data } = await axios.get('/api/conversations');
-        data.forEach((convo) => {
-          convo.messages.sort((a, b) => {
-            return (a > b) ? 1 : -1;
-          }) 
-        });
         setConversations(data);
       } catch (error) {
         console.error(error);
@@ -281,7 +216,6 @@ const Home = ({ user, logout }) => {
           conversations={conversations}
           user={user}
           postMessage={postMessage}
-          updateMessageReadOnServer = {updateMessageReadOnServer}
         />
       </Grid>
     </>

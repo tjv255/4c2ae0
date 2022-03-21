@@ -1,8 +1,7 @@
 const router = require("express").Router();
 const { User, Conversation, Message } = require("../../db/models");
-const { Op, Sequelize } = require("sequelize");
+const { Op } = require("sequelize");
 const onlineUsers = require("../../onlineUsers");
-const ConversationUser = require("../../db/models/conversationUser");
 
 // get all conversations for a user, include latest message text for preview, and all messages
 // include other user model so we have info on username/profile pic (don't include current user info)
@@ -11,32 +10,40 @@ router.get("/", async (req, res, next) => {
     if (!req.user) {
       return res.sendStatus(401);
     }
-    const curUserId = req.user.id;
-
-    // Find all of the conversations that the user is in
-    const conversationUsers = await ConversationUser.findAll({
-      where: {
-        userId: curUserId
-      },
-        attributes: ['conversationId'],
-        raw: true,
-        nest: true,
-    })
-    const conversationIds = conversationUsers.map((i)=>(i.conversationId))
-
+    const userId = req.user.id;
     const conversations = await Conversation.findAll({
-      where: {id: conversationIds},
-
-      attributes: ["id", "unreadMessageCount"],
+      where: {
+        [Op.or]: {
+          user1Id: userId,
+          user2Id: userId,
+        },
+      },
+      attributes: ["id"],
       order: [[Message, "createdAt", "DESC"]],
       include: [
+        { model: Message, order: ["createdAt", "DESC"] },
         {
           model: User,
-          as: 'participants',
-
+          as: "user1",
+          where: {
+            id: {
+              [Op.not]: userId,
+            },
+          },
+          attributes: ["id", "username", "photoUrl"],
+          required: false,
         },
-        { model: Message, order: ["createdAt", "DESC"] },
-
+        {
+          model: User,
+          as: "user2",
+          where: {
+            id: {
+              [Op.not]: userId,
+            },
+          },
+          attributes: ["id", "username", "photoUrl"],
+          required: false,
+        },
       ],
     });
 
@@ -45,12 +52,12 @@ router.get("/", async (req, res, next) => {
       const convoJSON = convo.toJSON();
 
       // set a property "otherUser" so that frontend will have easier access
-      for (let j=0; j < convo.participants.length; j++) {
-        if (convoJSON.participants[j].id != curUserId) {
-          convoJSON.otherUser = convoJSON.participants[j];
-          // delete convoJSON.participants;
-          break;
-        }
+      if (convoJSON.user1) {
+        convoJSON.otherUser = convoJSON.user1;
+        delete convoJSON.user1;
+      } else if (convoJSON.user2) {
+        convoJSON.otherUser = convoJSON.user2;
+        delete convoJSON.user2;
       }
 
       // set property for online status of the other user
@@ -61,24 +68,11 @@ router.get("/", async (req, res, next) => {
       }
 
       // set properties for notification count and latest message preview
-      convoJSON.latestMessageText = convoJSON.messages[0] ? convoJSON.messages[0].text : '';
+      convoJSON.latestMessageText = convoJSON.messages[0].text;
       conversations[i] = convoJSON;
     }
-    res.json(conversations);
-  } catch (error) {
-    next(error);
-  }
-});
 
-router.get("/get-unread-message-count", async (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.sendStatus(401);
-    } 
-    const conversationId = req.body.conversationId;
-    const count = await Conversation.findOne(
-      { where: {id: conversationId} },
-    )
+    res.json(conversations);
   } catch (error) {
     next(error);
   }

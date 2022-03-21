@@ -2,7 +2,6 @@ const db = require("./db");
 const { User } = require("./models");
 const Conversation = require("./models/conversation");
 const Message = require("./models/message");
-const ConversationUser = require('./models/conversationUser')
 
 async function seed() {
   await db.sync({ force: true });
@@ -27,27 +26,22 @@ async function seed() {
   const santaigoConvo = await Conversation.create({
     user1Id: thomas.id,
     user2Id: santiago.id,
-    unreadMessageCount: 0,
   });
-  await santaigoConvo.addParticipants([thomas.id, santiago.id]);
 
   await Message.create({
     conversationId: santaigoConvo.id,
     senderId: santiago.id,
     text: "Where are you from?",
-    receiverHasRead: false,
   });
   await Message.create({
     conversationId: santaigoConvo.id,
     senderId: thomas.id,
     text: "I'm from New York",
-    receiverHasRead: false,
   });
   await Message.create({
     conversationId: santaigoConvo.id,
     senderId: santiago.id,
     text: "Share photo of your city, please",
-    receiverHasRead: false,
   });
 
   const chiumbo = await User.create({
@@ -60,15 +54,11 @@ async function seed() {
   const chiumboConvo = await Conversation.create({
     user1Id: chiumbo.id,
     user2Id: thomas.id,
-    unreadMessageCount: 0,
   });
-  await chiumboConvo.addParticipants([chiumbo.id, thomas.id]);
-
   await Message.create({
     conversationId: chiumboConvo.id,
     senderId: chiumbo.id,
     text: "Sure! What time?",
-    receiverHasRead: false,
   });
 
   const hualing = await User.create({
@@ -78,21 +68,16 @@ async function seed() {
     photoUrl:
       "https://res.cloudinary.com/dmlvthmqr/image/upload/v1607914466/messenger/6c4faa7d65bc24221c3d369a8889928158daede4_vk5tyg.png",
   });
-
   const hualingConvo = await Conversation.create({
     user2Id: hualing.id,
     user1Id: thomas.id,
-    unreadMessageCount: 0,
   });
-  await hualingConvo.addParticipants([hualing.id, thomas.id]);
-
 
   for (let i = 0; i < 11; i++) {
     await Message.create({
       conversationId: hualingConvo.id,
       senderId: hualing.id,
       text: "a test message",
-      receiverHasRead: false,
     });
   }
 
@@ -100,7 +85,6 @@ async function seed() {
     conversationId: hualingConvo.id,
     senderId: hualing.id,
     text: "😂 😂 😂",
-    receiverHasRead: false,
   });
 
   const otherUsers = await Promise.all([

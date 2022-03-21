@@ -8,26 +8,18 @@ router.post("/", async (req, res, next) => {
     if (!req.user) {
       return res.sendStatus(401);
     }
-
     const senderId = req.user.id;
-    const { participantIds, recipientId, text, conversationId, receiverHasRead, sender } = req.body;
+    const { recipientId, text, conversationId, sender } = req.body;
 
     // if we already know conversation id, we can save time and just add it to message and return
     if (conversationId) {
-      const message = await Message.create({ senderId, text, receiverHasRead, conversationId });
-      const updatedUnreadMessageCount =await Conversation.setUnreadMessageCount(conversationId, senderId)
-
-      return res.json({ message, sender, receiverHasRead, updatedUnreadMessageCount });
+      const message = await Message.create({ senderId, text, conversationId });
+      return res.json({ message, sender });
     }
-    else {
-      updatedUnreadMessageCount = 1;
-    }
-
     // if we don't have conversation id, find a conversation to make sure it doesn't already exist
     let conversation = await Conversation.findConversation(
-      participantIds
-      // senderId,
-      // recipientId,
+      senderId,
+      recipientId
     );
 
     if (!conversation) {
@@ -43,29 +35,9 @@ router.post("/", async (req, res, next) => {
     const message = await Message.create({
       senderId,
       text,
-      receiverHasRead,
       conversationId: conversation.id,
     });
-    res.json({ message, sender, updatedUnreadMessageCount });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.put("/mark-as-read/all", async (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.sendStatus(401);
-    }
-    const { conversationId, } = req.body;
-    let  result  = await Message.markAsReadInConvo(
-      conversationId,
-    );
-    Conversation.update(
-      {unreadMessageCount: 0},
-      {where: {id: conversationId}}
-    )
-    res.json({result, conversationId});
+    res.json({ message, sender });
   } catch (error) {
     next(error);
   }
