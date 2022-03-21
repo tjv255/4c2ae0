@@ -106,7 +106,7 @@ const Home = ({ user, logout }) => {
         })
       );
     },
-    [setConversations, conversations]
+    [setConversations]
   );
 
   const addMessageToConversation = useCallback(
@@ -131,7 +131,7 @@ const Home = ({ user, logout }) => {
 
             // for the receiver, check to see if they have the conversation open they are receiving in
             // If so, mark incoming message as read
-            if (message.senderId != user.id && convo.otherUser.username == activeConversation) {
+            if (message.senderId !== user.id && convo.otherUser.username === activeConversation) {
               const body = {
                 conversationId: convo.id,
               }
@@ -155,24 +155,26 @@ const Home = ({ user, logout }) => {
         })
       );
     },
-    [setConversations, conversations]
+    [setConversations, activeConversation, socket, user.id]
   );
 
   const updateMessageReadOnClient = useCallback(
     (data) => {
-    const conversationId = data.conversationId;
-    setConversations((prev) => 
-      prev.map((convo) => {
-        if (convo.id === conversationId) {
-          const convoCopy = { ...convo };
-          convoCopy.unreadMessageCount = 0;
-          return convoCopy;
-        } else {
-          return convo;
-        }
-      })
-    );
-  })
+      const conversationId = data.conversationId;
+      setConversations((prev) => 
+        prev.map((convo) => {
+          if (convo.id === conversationId) {
+            const convoCopy = { ...convo };
+            convoCopy.unreadMessageCount = 0;
+            return convoCopy;
+          } else {
+            return convo;
+          }
+        })
+      );
+    },
+    [setConversations]
+  );
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
@@ -223,7 +225,7 @@ const Home = ({ user, logout }) => {
       socket.off('new-message', addMessageToConversation);
       socket.off('update-message', updateMessageReadOnClient);
     };
-  }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
+  }, [updateMessageReadOnClient, addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
 
   useEffect(() => {
     // when fetching, prevent redirect

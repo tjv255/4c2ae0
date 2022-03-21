@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Badge, Box, Typography } from '@material-ui/core';
+import React from 'react';
+import { Badge, Box } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -46,14 +46,14 @@ const Chat = ({ conversation, setActiveChat }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} unreadMessageExists={conversation.unreadMessageCount && 
-      conversation.messages[conversation.messages.length-1].senderId == conversation.otherUser.id
+      conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id
          ? conversation.unreadMessageCount > 0
           : false} />
-      {conversation.unreadMessageCount > 0 && conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id ? (
+      {conversation.unreadMessageCount > 0 && conversation.messages[conversation.messages.length-1].senderId === conversation.otherUser.id && (
       <Badge className={classes.unreadMessageIndicator}>
         {conversation.unreadMessageCount}
       </Badge>
-      ) : '' }
+      )}
       
       
     </Box>

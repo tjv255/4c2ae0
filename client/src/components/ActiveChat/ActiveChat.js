@@ -36,30 +36,25 @@ const ActiveChat = ({
       )
     : {};
 
-  // Set uread message to read upon opening conversation
   useEffect(() => {
     if (conversation) {
       messagesRead();
     }
   }, [activeConversation]);
 
-  // Called when user opens a new conversation. Returns true if the user wasn't the one to send the last message 
   function clickedChatWhereNotSender() {
-    if (conversation.messages.length == 0)
+    if (conversation.messages.length === 0)
       return false;
     return conversation.messages[conversation.messages.length-1].senderId !== user.id
   };
 
-  // Sets the last message marked as unread to read
   function messagesRead() {
     if (clickedChatWhereNotSender()) {
-      // User is not the one who sent the last message
       const reqBody = {
         conversationId: conversation.id,
       }
       updateMessageReadOnServer(reqBody);
     }
-    // else do nothing if the user is the one who sent the message
   }
 
   const isConversation = (obj) => {

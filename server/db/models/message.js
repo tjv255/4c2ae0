@@ -19,7 +19,7 @@ const Message = db.define("message", {
 
 Message.findMessage = async function(conversationId, id) {
   const message = await Message.findOne({
-    where: { conversationId: conversationId, id: id, }
+    where: { conversationId, id }
   });
 
   return message;
@@ -28,7 +28,7 @@ Message.findMessage = async function(conversationId, id) {
 Message.markAsReadInConvo = async function (conversationId) {
   await Message.update(
     { receiverHasRead: true },
-    { where: {conversationId: conversationId} },
+    { where: {conversationId} },
   );
   return;
 }
@@ -37,8 +37,8 @@ Message.getUnreadMessageCount = async function(conversationId, senderId) {
   const result = await Message.findAndCountAll({
     where: {
       receiverHasRead: false,
-      conversationId: conversationId,
-      senderId: senderId,
+      conversationId,
+      senderId,
     }
   })
   return result.count;

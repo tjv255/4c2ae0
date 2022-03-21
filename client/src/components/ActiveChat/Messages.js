@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, Avatar } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import { SenderBubble, OtherUserBubble } from '.';
 import moment from 'moment';
 
@@ -23,13 +23,13 @@ const Messages = (props) => {
     if ((messages.length === 0)) {
       setFirstUnreadMessageId(-1);
     }
-    else if (unreadMessageCount == messages.length) {
+    else if (unreadMessageCount === messages.length) {
       setFirstUnreadMessageId(messages[0].id);
     }
     else {
       setFirstUnreadMessageId(messages[(messages.length - unreadMessageCount)-1].id);
     }
-  }, [unreadMessageCount]);
+  }, [messages, unreadMessageCount]);
 
   return (
     <Box>

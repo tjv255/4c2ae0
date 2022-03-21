@@ -4,10 +4,5 @@ const db = new Sequelize(process.env.DATABASE_URL || "postgres://localhost:5432/
   logging: false
 });
 
-// const db = new Sequelize('messenger', 'postgres', '123456', {
-//   host: 'localhost',
-//   dialect: 'postgres',
-// });
-
 module.exports = db;
 

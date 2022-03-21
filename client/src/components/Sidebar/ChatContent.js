@@ -1,9 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@material-ui/core";
 import { makeStyles, createTheme, ThemeProvider } from "@material-ui/core/styles";
-import { red } from "@material-ui/core/colors";
-
-
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,7 +15,6 @@ const useStyles = makeStyles((theme) => ({
   },
   previewText: {
     fontSize: 12,
-    // color: "#9CADC8",
     letterSpacing: -0.17,
   },
 }));

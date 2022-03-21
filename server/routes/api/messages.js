@@ -57,6 +57,12 @@ router.put("/mark-as-read/all", async (req, res, next) => {
       return res.sendStatus(401);
     }
     const { conversationId, } = req.body;
+    const conversation = await Conversation.findOne({
+      where: { id: conversationId } 
+    });
+    if (req.user.id != conversation.user1Id && req.user.id != conversation.user2Id) {
+      return res.sendStatus(403);
+    }
     let  result  = await Message.markAsReadInConvo(
       conversationId,
     );
